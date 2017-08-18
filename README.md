@@ -1,4 +1,4 @@
-VTD-XML
+VTD-XML [![Build Status](https://travis-ci.org/springernature/vtdxml4s.svg?branch=master)](https://travis-ci.org/springernature/vtdxml4s) [![](https://jitpack.io/v/springernature/vtdxml4s.svg)](https://jitpack.io/#springernature/vtdxml4s)
 ===
 
 A drop in replacement for scala-xml with improved performance. It uses [VtdXml](http://vtd-xml.sourceforge.net "Vtd Xml Homepage") to parse and query XML 
