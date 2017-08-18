@@ -23,7 +23,7 @@ Submit issues and PR's to this github.
 ### How to use
 When turning strings or bytes into Xml to make queries against: replace imports to use VtdXml rather than ScalaXml:
 
-```
+```scala
 //import scala.xml.{NodeSeq, Node, Elem}
 import com.springer.link.shared.xml.VtdXml.{VtdNodeSeq => NodeSeq, VtdNode => Node, VtdElem => Elem}     
 ```
@@ -34,7 +34,7 @@ For best performance and thread-safety it is recommended to use the fromPool and
 ### Extras
 Because the underlying library support xpath 1.0 you can include xpath expressions between \ or \\\\ e.g.
 
-```
+```scala
     val elem = <a>
     <list>
         <item>1</item>
@@ -50,7 +50,7 @@ Because the underlying library support xpath 1.0 you can include xpath expressio
 
 There are also extra methods you can use to push logic into xpath which can also improve performance e.g.
 
-```
+```scala
     val elem = <a>
     <list>
        <item>10.0</item>
@@ -74,7 +74,7 @@ I have not noticed improvement when:
 
 - Xml documents are small
 - Pattern of use it to iterate over large nodeseq and map it to scala objects. e.g. for document with many authors the following is still disappointingly slow: 
-```
+```scala
 (articleRoot \ "ArticleHeader" \ "AuthorGroup" \ "Author") map { authorNode =>
       val givenName = (authorNode \ "AuthorName" \ "GivenName").text
       val particle = (authorNode \ "AuthorName" \ "Particle").text
@@ -91,7 +91,7 @@ I have not noticed improvement when:
 - The underlying library has some restrictions on node depth (256) and node name length (512) 
 - VtdXml is not threadsafe. Recommended use is to create a pool and do all Xml expression inside using(...) e.g.:
 
-```
+```scala
  val pool = VtdXml.poolOf(20)
  ...
  pool.usingElem(bytes, elem => {
