@@ -3,21 +3,19 @@ VTD-XML
 
 A drop in replacement for scala-xml with improved performance. It uses [VtdXml](http://vtd-xml.sourceforge.net "Vtd Xml Homepage") to parse and query XML 
 
-##Supported platforms
+## Supported platforms
 - Scala 2.11 and 2.12
-- Vtd-xml 2.12
+- Vtd-xml 2.13
 
-##How to install
+## How to install
 - sbt: 
 ```
-resolvers += "Repo Tools Sonatype Nexus OSS Releases" at "http://repo.tools.springer-sbm.com:8081/nexus/content/repositories/releases/",
-libraryDependencies += "com.springer" %% "vtd-xml" % "201607251409-5"
+resolvers += "jitpack" at "https://jitpack.io",
+libraryDependencies += "com.github.springernature" %% "vtdxml4s" % "v1.0"	
 ```
  
 ## Licensing
-The MIT License (MIT)  http://opensource.org/licenses/MIT
-
-Copyright © 2016, 2017 Springer Nature
+GNU General Public License v2.0
 
 ## Maintenance
 Submit issues and PR's to this github.
