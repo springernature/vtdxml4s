@@ -75,6 +75,7 @@ object VtdXml {
   }
 
   sealed class VtdNodeSeq(nav: VTDNav, private val xpathParts: List[XpathStep] = List.empty, val attrName: Option[String] = None, asChild: Boolean = false) extends Seq[VtdNode] {
+    def \@(attributeName: String): String = (this \ ("@" + attributeName)).text
 
     override def iterator: Iterator[VtdNode] = new AbstractIterator[VtdNode] {
       val cloneNav = nav.cloneNav()

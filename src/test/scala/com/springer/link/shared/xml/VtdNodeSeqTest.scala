@@ -127,6 +127,15 @@ class VtdNodeSeqTest extends FunSpec {
 
   }
 
+  it("should get attribute using \\@") {
+    val keyword = <ArticleHeader>
+    <KeywordGroup xml:lang="en" OutputMedium="All" Language="En">
+    </KeywordGroup>
+    </ArticleHeader>
+
+    (VtdXml.fromElem(keyword) \ "KeywordGroup" \@ "OutputMedium") shouldBe "All"
+  }
+
   it("keywords bug - * text matches elems. Use nav.getTokenType(nextLoc) instead") {
     val keyword = <ArticleHeader>
     <KeywordGroup xml:lang="en" OutputMedium="All" Language="En">
