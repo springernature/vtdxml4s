@@ -10,11 +10,11 @@ import scala.xml.Elem
 
 object VtdXml {
 
-  def fromString(str: String) = fromBytes(str.getBytes)
+  def load(str: String): VtdElem = load(str.getBytes)
 
-  def fromElem(elem: Elem) = fromString(elem.buildString(stripComments = true))
+  def load(elem: Elem): VtdElem = load(elem.buildString(stripComments = true))
 
-  def fromInputStream(is: InputStream) = {
+  def load(is: InputStream): VtdElem = {
     def copy(input: InputStream, output: OutputStream): Unit = {
       val buffer = new Array[Byte](4 * 1024)
       var n = 0
@@ -27,10 +27,10 @@ object VtdXml {
     }
     val output: ByteArrayOutputStream = new ByteArrayOutputStream()
     copy(is, output)
-    fromBytes(output.toByteArray)
+    load(output.toByteArray)
   }
 
-  def fromBytes(bytes: Array[Byte]) = {
+  def load(bytes: Array[Byte]): VtdElem = {
     val vg: VTDGen = new VTDGen()
     vg.selectLcDepth(5)
     vg.setDoc(bytes)

@@ -26,7 +26,7 @@ class VtdNodeSeqTest extends FunSpec {
     <title modifier="very">hello<b>bold</b> sam</title>
   </a>
 
-  val vtdElem: VtdElem = VtdXml.fromElem(elem)
+  val vtdElem: VtdElem = VtdXml.load(elem)
 
   describe("use via pool") {
     it("works in a pool") {
@@ -77,7 +77,7 @@ class VtdNodeSeqTest extends FunSpec {
         </Abstract>
       </ArticleHeader>
 
-    val vtdAbs = VtdXml.fromElem(abs)
+    val vtdAbs = VtdXml.load(abs)
 
     (abs \ "Abstract").head.child.size shouldBe 5
     (abs \ "Abstract").flatMap(_.child).map(_.label).filter(_ != "#PCDATA") shouldBe Seq("Heading", "Para")
@@ -109,7 +109,7 @@ class VtdNodeSeqTest extends FunSpec {
   }
 
   it("sanitize title bug - use of lable in map truncates nodeseq") {
-    val example = VtdXml.fromElem(<ArticleTitle xml:lang="en" Language="En">
+    val example = VtdXml.load(<ArticleTitle xml:lang="en" Language="En">
       Observation of a new boson with mass near 125 GeV in pp collisions at
       <InlineEquation ID="IEq1">
         <InlineMediaObject>
@@ -133,7 +133,7 @@ class VtdNodeSeqTest extends FunSpec {
     </KeywordGroup>
     </ArticleHeader>
 
-    (VtdXml.fromElem(keyword) \ "KeywordGroup" \@ "OutputMedium") shouldBe "All"
+    (VtdXml.load(keyword) \ "KeywordGroup" \@ "OutputMedium") shouldBe "All"
   }
 
   it("keywords bug - * text matches elems. Use nav.getTokenType(nextLoc) instead") {
@@ -147,7 +147,7 @@ class VtdNodeSeqTest extends FunSpec {
     </KeywordGroup>
     </ArticleHeader>
 
-    val vtdKeywords = VtdXml.fromElem(keyword)
+    val vtdKeywords = VtdXml.load(keyword)
 
     (vtdKeywords \ "KeywordGroup" \ "Keyword").map { elem =>
       elem.child.find(_.label == "IndexTerm").map(_ \ "Primary").getOrElse(elem).text.trim
@@ -208,7 +208,7 @@ class VtdNodeSeqTest extends FunSpec {
       </list>
     </a>
 
-    val number: Double = VtdXml.fromElem(elem).evalXpathToNumber(_ => "sum(//list/item)")
+    val number: Double = VtdXml.load(elem).evalXpathToNumber(_ => "sum(//list/item)")
     number shouldBe 119.0
   }
 
@@ -223,7 +223,7 @@ class VtdNodeSeqTest extends FunSpec {
       </list>
     </a>
 
-    val seq: VtdNodeSeq = VtdXml.fromElem(elem) \ "list" \ "item[3 > .]"
+    val seq: VtdNodeSeq = VtdXml.load(elem) \ "list" \ "item[3 > .]"
     seq.size shouldBe 2
 
   }
