@@ -309,13 +309,16 @@ object VtdXml {
 
     def mkExpression: String = xpathParts.reverse.tail.reverse.mkString + xpathParts.last.expressionForText
 
+    // We would expect this method to return a concatenation of all payloads if more than one element was selected,
+    // instead, it returns only the payload of the first element.
+    // We did not change this to maintain back-compatibility.
     def payload: Array[Byte] = {
       val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
       val auto = new AutoPilot(nav)
       val string: String = xpathParts.mkString
       auto.selectXPath(string)
-      auto.evalXPath()
-      nav.dumpFragment(stream)
+      if(auto.evalXPath() != -1)
+        nav.dumpFragment(stream)
 
       stream.toByteArray
     }
