@@ -314,8 +314,8 @@ object VtdXml {
       val auto = new AutoPilot(nav)
       val string: String = xpathParts.mkString
       auto.selectXPath(string)
-      auto.evalXPath()
-      nav.dumpFragment(stream)
+      if(auto.evalXPath() != -1)
+        nav.dumpFragment(stream)
 
       stream.toByteArray
     }

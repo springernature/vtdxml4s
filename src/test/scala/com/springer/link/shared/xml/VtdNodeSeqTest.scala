@@ -1,5 +1,6 @@
 package com.springer.link.shared.xml
 
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
 
 import com.springer.link.shared.xml.VtdXml.{NodeSeqPool, VtdElem, VtdNodeSeq}
@@ -9,7 +10,6 @@ import org.scalatest.Matchers._
 import scala.collection.immutable.Seq
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.xml.Node
 
 class VtdNodeSeqTest extends FunSpec {
   val elem = <a>
@@ -225,7 +225,24 @@ class VtdNodeSeqTest extends FunSpec {
 
     val seq: VtdNodeSeq = VtdXml.load(elem) \ "list" \ "item[3 > .]"
     seq.size shouldBe 2
-
   }
 
+  describe("payload"){
+    it("provides byte array containing the xml element and all its content, including text and other sub-elements"){
+      val elem = <a><list><item>10.0</item></list></a>
+      new String(VtdXml.load(elem).payload, StandardCharsets.UTF_8) shouldBe """<a><list><item>10.0</item></list></a>"""
+    }
+
+    it("provides byte array containing selected sub-element"){
+      val xml = <a><list><item>10.0</item></list></a>
+      val vtdXml = VtdXml.load(xml) \ "list"
+      new String(vtdXml.payload, StandardCharsets.UTF_8) shouldBe """<list><item>10.0</item></list>"""
+    }
+
+    it("provides empty byte array when no element is selected"){
+      val xml = <a><list><item>10.0</item></list></a>
+      val vtdXml = VtdXml.load(xml) \ "foo"
+      new String(vtdXml.payload, StandardCharsets.UTF_8) shouldBe ""
+    }
+  }
 }
