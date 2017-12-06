@@ -244,5 +244,11 @@ class VtdNodeSeqTest extends FunSpec {
       val vtdXml = VtdXml.load(xml) \ "foo"
       new String(vtdXml.payload, StandardCharsets.UTF_8) shouldBe ""
     }
+
+    it("provides byte array for the first element if more than one is selected"){
+      val xml = <a><list><item>10.0</item><item>11.0</item></list></a>
+      val vtdXml = VtdXml.load(xml) \ "list" \ "item"
+      new String(vtdXml.payload, StandardCharsets.UTF_8) shouldBe "<item>10.0</item>"
+    }
   }
 }
