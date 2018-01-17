@@ -59,6 +59,8 @@ class VtdNodeSeqTest extends FunSpec {
     val doc = vtdElem
 
     (doc \ "title" \ "@modifier").text shouldBe "very"
+    (doc \\ "@modifier").map(_.text) shouldBe Seq("very", "very", "hello")
+    (doc \ "title" \\ "@modifier").text shouldBe "very"
     (doc \ "_").head.attribute("modifier").get.head.text  shouldBe "very"
   }
 

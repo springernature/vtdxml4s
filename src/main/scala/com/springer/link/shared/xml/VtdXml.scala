@@ -302,7 +302,7 @@ object VtdXml {
     }
 
     def \\(path: String): VtdNodeSeq = path match {
-      case attr if attr.head == '@' => new VtdNodeSeq(nav, xpathParts :+ new XpathStep("//*[" + attr + "]"), Some(attr.substring(1)))
+      case attr if attr.head == '@' => new VtdNodeSeq(nav, xpathParts :+ new XpathStep("/descendant-or-self::*[" + attr + "]"), Some(attr.substring(1)))
       case "_" => new VtdNodeSeq(nav, xpathParts :+ new XpathStep("//*"))
       case _ => new VtdNodeSeq(nav, xpathParts :+ new XpathStep("//" + path))
     }
