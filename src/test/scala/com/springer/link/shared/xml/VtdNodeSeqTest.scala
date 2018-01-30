@@ -61,10 +61,10 @@ class VtdNodeSeqTest extends FunSpec {
     (doc \ "title" \ "@modifier").text shouldBe "very"
     (doc \\ "@modifier").map(_.text) shouldBe Seq("very", "very", "hello")
     (doc \ "title" \\ "@modifier").text shouldBe "very"
-    (doc \ "_").head.attribute("modifier").get.head.text  shouldBe "very"
+    (doc \ "_").head.attribute("modifier").get.head.text shouldBe "very"
   }
 
-  it("should work work with A++'s Abstract"){
+  it("should work work with A++'s Abstract") {
     val abs =
       <ArticleHeader>
         <Abstract>
@@ -101,7 +101,7 @@ class VtdNodeSeqTest extends FunSpec {
 
     child.length shouldBe 5
     child.map(_.text).mkString shouldBe "hello bold curious silly sam"
-//    child.mkString shouldBe "hello <b><c>bold</c></b> curious <b>silly</b> sam" //todo
+    //    child.mkString shouldBe "hello <b><c>bold</c></b> curious <b>silly</b> sam" //todo
 
     child.head.text shouldBe "hello "
     child(1).text shouldBe "bold"
@@ -172,21 +172,35 @@ class VtdNodeSeqTest extends FunSpec {
     seq1(1).text shouldBe "two"
     seq1.last.text shouldBe "three"
 
-//    seq1.mkString shouldBe "<item>one</item><item modifier=\"hello\">two</item><item>three</item>" //todo
+    //    seq1.mkString shouldBe "<item>one</item><item modifier=\"hello\">two</item><item>three</item>" //todo
 
     val seq = doc \ "list"
     seq.length shouldBe 1
     seq.text.split("\n").map(_.trim()).mkString shouldBe "onetwothree"
-    seq.iterator.next().text/*..split("\n").map(_.trim()).mkString */ shouldBe  "onetwothree" // "\n      one\n      two\n      three\n    "
+    seq.iterator.next().text /*..split("\n").map(_.trim()).mkString */ shouldBe "onetwothree" // "\n      one\n      two\n      three\n    "
 
     seq.mkString shouldBe "<list>\n      <item>one</item>\n      <item modifier=\"hello\">two</item>\n      <item>three</item>\n    </list>"
     (seq \\ "@modifier").text shouldBe "hello"
 
-    (doc \ "list" \\ "@modifier").exists( n => n.exists(_.text == "hello")) shouldBe true
+    (doc \ "list" \\ "@modifier").exists(n => n.exists(_.text == "hello")) shouldBe true
 
-    (doc \ "list").exists( n => {
+    (doc \ "list").exists(n => {
       (n \\ "@modifier").text == "hello"
     }) shouldBe true
+  }
+
+  it("// gets content at different levels") {
+    val elem = VtdXml.load(
+      <a>
+        <b>1</b>
+        <sub><b>2</b></sub>
+        <b>3</b>
+    </a>)
+
+    val bs = (elem \\ "b").map(x => x.mkString)
+
+    bs.length shouldBe 3
+    bs.filterNot(_ == "").length shouldBe 3
   }
 
   it("should return text of nodeseq and each node") {
@@ -229,25 +243,25 @@ class VtdNodeSeqTest extends FunSpec {
     seq.size shouldBe 2
   }
 
-  describe("payload"){
-    it("provides byte array containing the xml element and all its content, including text and other sub-elements"){
+  describe("payload") {
+    it("provides byte array containing the xml element and all its content, including text and other sub-elements") {
       val elem = <a><list><item>10.0</item></list></a>
       new String(VtdXml.load(elem).payload, StandardCharsets.UTF_8) shouldBe """<a><list><item>10.0</item></list></a>"""
     }
 
-    it("provides byte array containing selected sub-element"){
+    it("provides byte array containing selected sub-element") {
       val xml = <a><list><item>10.0</item></list></a>
       val vtdXml = VtdXml.load(xml) \ "list"
       new String(vtdXml.payload, StandardCharsets.UTF_8) shouldBe """<list><item>10.0</item></list>"""
     }
 
-    it("provides empty byte array when no element is selected"){
+    it("provides empty byte array when no element is selected") {
       val xml = <a><list><item>10.0</item></list></a>
       val vtdXml = VtdXml.load(xml) \ "foo"
       new String(vtdXml.payload, StandardCharsets.UTF_8) shouldBe ""
     }
 
-    it("provides byte array for the first element if more than one is selected"){
+    it("provides byte array for the first element if more than one is selected") {
       val xml = <a><list><item>10.0</item><item>11.0</item></list></a>
       val vtdXml = VtdXml.load(xml) \ "list" \ "item"
       new String(vtdXml.payload, StandardCharsets.UTF_8) shouldBe "<item>10.0</item>"
