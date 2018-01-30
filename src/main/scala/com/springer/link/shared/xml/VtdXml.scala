@@ -74,11 +74,11 @@ object VtdXml {
     }
   }
 
-  sealed class VtdNodeSeq(nav: VTDNav, private val xpathParts: List[XpathStep] = List.empty, val attrName: Option[String] = None, asChild: Boolean = false) extends Seq[VtdNode] {
+  sealed class VtdNodeSeq(nav: VTDNav, private val xpathParts: List[XpathStep] = List.empty, attrName: Option[String] = None, asChild: Boolean = false) extends Seq[VtdNode] {
     def \@(attributeName: String): String = (this \ ("@" + attributeName)).text
 
     override def iterator: Iterator[VtdNode] = new AbstractIterator[VtdNode] {
-      val cloneNav = nav.cloneNav()
+      val cloneNav: VTDNav = nav.cloneNav()
       val auto = new AutoPilot(cloneNav)
 
       val expression: String = xpathParts.mkString
@@ -91,7 +91,6 @@ object VtdXml {
 
       var nextLoc: Int = auto.evalXPath()
       var nodeCounter = 0
-      var elemCounter = 0
 
       override def hasNext: Boolean = nextLoc > -1
 
@@ -104,32 +103,12 @@ object VtdXml {
           val maybeText: String = cloneNav.toRawString(nextLoc)
 
           val namespace: Int = maybeText.indexOf(":")
-          val maybeLabel = if (namespace > -1) maybeText.substring(namespace + 1) else maybeText
+          val parentLabel = if (namespace > -1) maybeText.substring(namespace + 1) else maybeText
 
           if (cloneNav.getText == -1 && cloneNav.getTokenType(nextLoc) != VTDNav.TOKEN_STARTING_TAG) {
             new VtdTextElem(cloneNav, xpathParts, None, maybeText)
           } else {
-            val vg: VTDGen = new VTDGen()
-
-            if (asChild) {
-              val countNav = nav.cloneNav()
-              val countAuto = new AutoPilot(countNav)
-
-              val isElem: Boolean = countNav.getTokenType(nextLoc) != VTDNav.TOKEN_STARTING_TAG
-              if (nav.getText > -1 || isElem) elemCounter = elemCounter + 1
-
-              childNodeSeq(vg, cloneNav, maybeLabel, elemCounter, nodeCounter)
-            } else {
-              val (fragment, xml, step) = (cloneNav.getElementFragment, cloneNav.getXML, new XpathStep("/" + maybeLabel))
-              val offset = fragment.asInstanceOf[Int]
-              val len = (fragment >>> 32).asInstanceOf[Int]
-
-              vg.clear()
-              vg.setDoc_BR(xml.getBytes, offset, len)
-              vg.parse(false) //no namespaces
-
-              new VtdElem(vg, vg.getNav, List(step))
-            }
+            childNodeSeq(cloneNav, parentLabel)
           }
         }
         nextLoc = auto.evalXPath()
@@ -153,38 +132,14 @@ object VtdXml {
         if (nextLoc > -1 && nav.getText == -1 && nav.getTokenType(nextLoc) != VTDNav.TOKEN_STARTING_TAG)
           new VtdTextElem(nav, xpathParts, None, label)
         else {
-          auto.selectXPath(xpathParts.mkString + "/node()")
-          def numOfElems: Int = {
-            var nextLoc: Int = auto.evalXPath()
-            var count = 0
-            var elemCount = 0
-
-            while (nextLoc != -1 && count < idx) {
-              val string: String = nav.toRawString(nextLoc)
-              val isElem: Boolean = nav.getTokenType(nextLoc) != VTDNav.TOKEN_STARTING_TAG
-              if (nav.getText > -1 || isElem) elemCount = elemCount + 1
-              nextLoc = auto.evalXPath()
-              count = count + 1
-            }
-            elemCount
-          }
-
-          childNodeSeq(new VTDGen(), nav, label, length, numOfElems)
+          childNodeSeq(nav, label)
         }
       } else {
         auto.selectXPath(xpathParts.mkString + "[" + (idx + 1) + "]")
         val nextLoc: Int = auto.evalXPath()
         val label: String = nav.toRawString(nextLoc)
-        val (fragment, xml, step) = (nav.getElementFragment, nav.getXML, new XpathStep("/" + label))
-        val offset = fragment.asInstanceOf[Int]
-        val len = (fragment >>> 32).asInstanceOf[Int]
 
-        val vg = new VTDGen
-        vg.clear()
-        vg.setDoc_BR(xml.getBytes, offset, len)
-        vg.parse(false) //no namespaces
-
-        new VtdElem(vg, vg.getNav, List(step))
+        childNodeSeq(nav, label)
       }
     }
 
@@ -193,16 +148,11 @@ object VtdXml {
       new VtdTextElem(nav, xpathParts, attrName, if (attrVal > -1) nav.toNormalizedString(attrVal) else "")
     }
 
-    private def childNodeSeq(vg: VTDGen, nav: VTDNav, label: String, numOfNodes: Int, elemCount: Int): VtdElem = {
-      val (fragment, xml, step) = if (numOfNodes > 1)
-        (nav.getElementFragment, nav.getXML, new XpathStep("/" + label))
-      else {
-        val parentNav: VTDNav = nav.cloneNav()
-        parentNav.toElement(1) //get the parent
-
-        val parent: String = parentNav.toRawString(parentNav.getCurrentIndex)
-        (parentNav.getElementFragment, parentNav.getXML, new XpathStep("/" + parent, "/" + parent + "/node()[" + elemCount + "]"))
-      }
+    private def childNodeSeq(nav: VTDNav, path: String) = {
+      val vg = new VTDGen()
+      val fragment = nav.getElementFragment
+      val xml = nav.getXML
+      val step = new XpathStep("/" + path)
 
       val offset = fragment.asInstanceOf[Int]
       val len = (fragment >>> 32).asInstanceOf[Int]
@@ -317,7 +267,7 @@ object VtdXml {
       val auto = new AutoPilot(nav)
       val string: String = xpathParts.mkString
       auto.selectXPath(string)
-      if(auto.evalXPath() != -1)
+      if (auto.evalXPath() != -1)
         nav.dumpFragment(stream)
 
       stream.toByteArray

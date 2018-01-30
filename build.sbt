@@ -1,6 +1,6 @@
 name := "vtdxml4s"
 
-organization := "com.springernature"
+organization := "com.github.springernature"
 
 crossScalaVersions := Seq("2.12.3", "2.11.7")
 
@@ -13,3 +13,7 @@ libraryDependencies ++= Seq(
     "com.ximpleware" % "vtd-xml" % "2.13",
     "org.scalatest" %% "scalatest" % "3.0.0" % "test"
   )
+
+publishTo := {
+  Some(Resolver.file("Local Maven Repository", new File(Path.userHome.absolutePath + "/.m2/repository")))
+}
