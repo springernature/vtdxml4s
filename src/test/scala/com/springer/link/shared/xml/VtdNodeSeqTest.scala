@@ -203,6 +203,22 @@ class VtdNodeSeqTest extends FunSpec {
     bs.filterNot(_ == "").length shouldBe 3
   }
 
+  it("handle processing instructions") {
+    val elem = VtdXml.load(
+      """
+        |<a>
+        | <b>value</b>
+        | hello
+        | <?pi inst $pi#?>
+        | <b>another value</b>
+        |</a>
+      """.stripMargin)
+
+    val bs = (elem \\ "b").map(x => x.mkString)
+
+    bs.length shouldBe 2
+  }
+
   it("should return text of nodeseq and each node") {
     val seq = vtdElem \ "title2"
     seq.length shouldBe 1

@@ -90,14 +90,11 @@ object VtdXml {
       }
 
       var nextLoc: Int = auto.evalXPath()
-      var nodeCounter = 0
 
       override def hasNext: Boolean = nextLoc > -1
 
       override def next(): VtdNode = {
         if (nextLoc == -1) throw new NoSuchElementException
-
-        nodeCounter = nodeCounter + 1
         val elem: VtdNode = if (attrName.isDefined) attributeText(cloneNav)
         else {
           val maybeText: String = cloneNav.toRawString(nextLoc)
@@ -148,17 +145,27 @@ object VtdXml {
       new VtdTextElem(nav, xpathParts, attrName, if (attrVal > -1) nav.toNormalizedString(attrVal) else "")
     }
 
-    private def childNodeSeq(nav: VTDNav, path: String) = {
+    private def childNodeSeq(nav: VTDNav, elemName: String) = {
       val vg = new VTDGen()
       val fragment = nav.getElementFragment
       val xml = nav.getXML
-      val step = new XpathStep("/" + path)
+      val step = new XpathStep("/" + elemName)
 
       val offset = fragment.asInstanceOf[Int]
       val len = (fragment >>> 32).asInstanceOf[Int]
 
-      vg.clear()
-      vg.setDoc_BR(xml.getBytes, offset, len)
+      val closeElem = s"</$elemName>"
+
+      //Fix for weird bug with pi
+      val bytes = xml.getBytes
+      if (new String(xml.getBytes, offset + len - elemName.length  - 3, elemName.length  + 3) != closeElem) {
+        val str = new String(bytes, offset, len)
+        val fixForPIBugStr = str.substring(0, str.indexOf(closeElem) + closeElem.length)
+        vg.setDoc(fixForPIBugStr.getBytes)
+      } else {
+        vg.setDoc(bytes, offset, len)
+      }
+
       vg.parse(false) //no namespaces
 
       new VtdElem(vg, vg.getNav, List(step))
