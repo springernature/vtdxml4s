@@ -3,7 +3,7 @@ package com.springer.link.shared.xml
 import java.io.{ByteArrayOutputStream, InputStream, OutputStream}
 import java.util.concurrent.{ArrayBlockingQueue, LinkedBlockingDeque}
 
-import com.ximpleware.{AutoPilot, VTDGen, VTDNav, XPathParseException}
+import com.ximpleware._
 
 import scala.collection.AbstractIterator
 import scala.xml.Elem
@@ -25,6 +25,7 @@ object VtdXml {
         output.write(buffer, 0, n)
       }
     }
+
     val output: ByteArrayOutputStream = new ByteArrayOutputStream()
     copy(is, output)
     load(output.toByteArray)
@@ -161,21 +162,21 @@ object VtdXml {
 
       //Fix for weird bug with pi
       val bytes = xml.getBytes
-      val closeElem = s"</${namespace.map(_ + ":").getOrElse("")}$elemName>"
 
-      val openAndCloseElem = s"<${namespace.map(_ + ":").getOrElse("")}$elemName/>"
-      val endTag = new String(xml.getBytes, offset + len - elemName.length - 3, elemName.length + 3)
-      val openAndCloseTag = new String(xml.getBytes, offset, len)
-
-      if (endTag != closeElem && openAndCloseElem != openAndCloseTag) {
-        val str = new String(bytes, offset, len)
-        val fixForPIBugStr = str.substring(0, str.indexOf(closeElem) + closeElem.length)
-        vg.setDoc(fixForPIBugStr.getBytes)
-      } else {
-        vg.setDoc(bytes, offset, len)
+      vg.setDoc(bytes, offset, len)
+      try {
+        vg.parse(false) //no namespaces
+      } catch {
+        case _: ParseException =>
+          vg.clear()
+          val str = new String(bytes, offset, len)
+          val closeTagRegex = s"</$elemName>|<$elemName ?.*/>".r
+          val inner = str.substring(0, closeTagRegex.findFirstMatchIn(str).get.end)
+          println(inner)
+          vg.setDoc_BR(inner.getBytes)
+          vg.parse(false)
       }
 
-      vg.parse(false) //no namespaces
 
       new VtdElem(vg, vg.getNav, List(step))
     }
@@ -255,9 +256,7 @@ object VtdXml {
       }
     }
 
-    override def mkString = {
-      new String(payload)
-    }
+    override def mkString = new String(payload)
 
     override def toString(): String = text
 

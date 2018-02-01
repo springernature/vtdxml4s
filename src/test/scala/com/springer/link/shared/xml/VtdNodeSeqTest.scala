@@ -209,12 +209,13 @@ class VtdNodeSeqTest extends FunSpec {
         |<a>
         | <ns:b>value</ns:b>
         | <ns:b/>
+        | <ns:b Type="2"/>
         |</a>
       """.stripMargin)
 
     val bs = (elem \\ "b").map(x => x.mkString)
 
-    bs.length shouldBe 2
+    bs.length shouldBe 3
   }
 
   it("handle processing instructions") {
@@ -224,13 +225,19 @@ class VtdNodeSeqTest extends FunSpec {
         | <b>value</b>
         | hello
         | <?pi inst $pi#?>
+        | <b type="asd"/>
+        | hello
+        | <?pi inst $pi#?>
+        | <b/>
+        | hello
+        | <?pi inst $pi#?>
         | <b>another value</b>
         |</a>
       """.stripMargin)
 
-    val bs = (elem \\ "b").map(x => x.mkString)
+    val bs = (elem \\ "b").map(x => x.text)
 
-    bs.length shouldBe 2
+    bs.length shouldBe 4
   }
 
   it("should return text of nodeseq and each node") {
