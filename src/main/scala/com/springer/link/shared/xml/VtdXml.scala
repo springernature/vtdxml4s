@@ -99,13 +99,13 @@ object VtdXml {
         else {
           val maybeText: String = cloneNav.toRawString(nextLoc)
 
-          val namespace: Int = maybeText.indexOf(":")
-          val parentLabel = if (namespace > -1) maybeText.substring(namespace + 1) else maybeText
+          val namespaceIdx: Int = maybeText.indexOf(":")
+          val (ns, parentLabel) = if (namespaceIdx > -1) Some(maybeText.substring(0, namespaceIdx)) -> maybeText.substring(namespaceIdx + 1) else None -> maybeText
 
           if (cloneNav.getText == -1 && cloneNav.getTokenType(nextLoc) != VTDNav.TOKEN_STARTING_TAG) {
             new VtdTextElem(cloneNav, xpathParts, None, maybeText)
           } else {
-            childNodeSeq(cloneNav, parentLabel)
+            childNodeSeq(cloneNav, parentLabel, ns)
           }
         }
         nextLoc = auto.evalXPath()
@@ -125,18 +125,23 @@ object VtdXml {
         auto.selectXPath(xpathParts.mkString + "/node()[" + (idx + 1) + "]")
         val nextLoc: Int = auto.evalXPath()
         val label: String = nav.toRawString(nextLoc)
+        val namespaceIdx: Int = label.indexOf(":")
+        val (ns, parentLabel) = if (namespaceIdx > -1) Some(label.substring(0, namespaceIdx)) -> label.substring(namespaceIdx + 1) else None -> label
+
 
         if (nextLoc > -1 && nav.getText == -1 && nav.getTokenType(nextLoc) != VTDNav.TOKEN_STARTING_TAG)
           new VtdTextElem(nav, xpathParts, None, label)
         else {
-          childNodeSeq(nav, label)
+          childNodeSeq(nav, parentLabel, ns)
         }
       } else {
         auto.selectXPath(xpathParts.mkString + "[" + (idx + 1) + "]")
         val nextLoc: Int = auto.evalXPath()
         val label: String = nav.toRawString(nextLoc)
+        val namespaceIdx: Int = label.indexOf(":")
+        val (ns, parentLabel) = if (namespaceIdx > -1) Some(label.substring(0, namespaceIdx)) -> label.substring(namespaceIdx + 1) else None -> label
 
-        childNodeSeq(nav, label)
+        childNodeSeq(nav, parentLabel, ns)
       }
     }
 
@@ -145,7 +150,7 @@ object VtdXml {
       new VtdTextElem(nav, xpathParts, attrName, if (attrVal > -1) nav.toNormalizedString(attrVal) else "")
     }
 
-    private def childNodeSeq(nav: VTDNav, elemName: String) = {
+    private def childNodeSeq(nav: VTDNav, elemName: String, namespace: Option[String]) = {
       val vg = new VTDGen()
       val fragment = nav.getElementFragment
       val xml = nav.getXML
@@ -154,11 +159,15 @@ object VtdXml {
       val offset = fragment.asInstanceOf[Int]
       val len = (fragment >>> 32).asInstanceOf[Int]
 
-      val closeElem = s"</$elemName>"
-
       //Fix for weird bug with pi
       val bytes = xml.getBytes
-      if (new String(xml.getBytes, offset + len - elemName.length  - 3, elemName.length  + 3) != closeElem) {
+      val closeElem = s"</${namespace.map(_ + ":").getOrElse("")}$elemName>"
+
+      val openAndCloseElem = s"<${namespace.map(_ + ":").getOrElse("")}$elemName/>"
+      val endTag = new String(xml.getBytes, offset + len - elemName.length - 3, elemName.length + 3)
+      val openAndCloseTag = new String(xml.getBytes, offset, len)
+
+      if (endTag != closeElem && openAndCloseElem != openAndCloseTag) {
         val str = new String(bytes, offset, len)
         val fixForPIBugStr = str.substring(0, str.indexOf(closeElem) + closeElem.length)
         vg.setDoc(fixForPIBugStr.getBytes)

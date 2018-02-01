@@ -203,6 +203,20 @@ class VtdNodeSeqTest extends FunSpec {
     bs.filterNot(_ == "").length shouldBe 3
   }
 
+  it("handles and ignores namespaces") {
+    val elem = VtdXml.load(
+      """
+        |<a>
+        | <ns:b>value</ns:b>
+        | <ns:b/>
+        |</a>
+      """.stripMargin)
+
+    val bs = (elem \\ "b").map(x => x.mkString)
+
+    bs.length shouldBe 2
+  }
+
   it("handle processing instructions") {
     val elem = VtdXml.load(
       """
