@@ -172,7 +172,6 @@ object VtdXml {
           val str = new String(bytes, offset, len)
           val closeTagRegex = s"</$elemName>|<$elemName ?.*/>".r
           val inner = str.substring(0, closeTagRegex.findFirstMatchIn(str).get.end)
-          println(inner)
           vg.setDoc_BR(inner.getBytes)
           vg.parse(false)
       }
