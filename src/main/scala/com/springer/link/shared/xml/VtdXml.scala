@@ -1,7 +1,7 @@
 package com.springer.link.shared.xml
 
 import java.io.{ByteArrayOutputStream, InputStream, OutputStream}
-import java.util.concurrent.{ArrayBlockingQueue, LinkedBlockingDeque}
+import java.util.concurrent.LinkedBlockingDeque
 
 import com.ximpleware._
 
@@ -63,11 +63,17 @@ object VtdXml {
 
     def take(bytes: Array[Byte]): VtdElem = {
       val vg: VTDGen = stack.takeFirst()
-      vg.clear()
-      vg.setDoc_BR(bytes)
-      vg.parse(false)
-      val nav: VTDNav = vg.getNav
-      new VtdElem(vg, nav, List(new XpathStep("/" + nav.toRawString(nav.getRootIndex))))
+      try {
+        vg.clear()
+        vg.setDoc_BR(bytes)
+        vg.parse(false)
+        val nav: VTDNav = vg.getNav
+        new VtdElem(vg, nav, List(new XpathStep("/" + nav.toRawString(nav.getRootIndex))))
+      } catch {
+        case t: Throwable =>
+          stack.addFirst(vg)
+          throw t
+      }
     }
 
     def release(elem: VtdElem): Unit = {

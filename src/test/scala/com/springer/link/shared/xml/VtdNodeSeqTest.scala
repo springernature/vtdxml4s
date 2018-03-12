@@ -53,6 +53,21 @@ class VtdNodeSeqTest extends FunSpec {
       Await.result(Future.sequence(res), Duration(10, TimeUnit.SECONDS)).foreach(_ shouldBe "very")
     }
 
+    it("should release the pool resources when failing to parse an invalid XML") {
+      val invalidXML = "not-an-XML-string"
+      val bytes: Array[Byte] = invalidXML.getBytes
+
+      val pool: NodeSeqPool = VtdXml.poolOf(5)
+      val execs: ExecutorService = Executors.newFixedThreadPool(100)
+
+      implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(execs)
+      val res = (1 to 100000).map(_ => Future {
+        pool.usingElem(bytes, { elem => elem.text })
+      })
+
+      Await.result(Future.sequence(res).failed, Duration(10, TimeUnit.SECONDS))
+    }
+
   }
 
   it("should get attribute") {
