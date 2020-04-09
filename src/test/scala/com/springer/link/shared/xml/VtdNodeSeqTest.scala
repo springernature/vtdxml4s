@@ -4,14 +4,14 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
 
 import com.springer.link.shared.xml.VtdXml.{NodeSeqPool, VtdElem, VtdNodeSeq}
-import org.scalatest.FunSpec
-import org.scalatest.Matchers._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.immutable.Seq
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-class VtdNodeSeqTest extends FunSpec {
+class VtdNodeSeqTest extends AnyFunSpec with Matchers {
   val elem = <a>
     <title modifier="very">hello <b>bold</b> sam</title>
     <title2 modifier="very">hello <b><c>bold</c></b> curious <b>silly</b> sam</title2>
@@ -194,7 +194,7 @@ class VtdNodeSeqTest extends FunSpec {
     seq.text.split("\n").map(_.trim()).mkString shouldBe "onetwothree"
     seq.iterator.next().text /*..split("\n").map(_.trim()).mkString */ shouldBe "onetwothree" // "\n      one\n      two\n      three\n    "
 
-    seq.mkString shouldBe "<list>\n      <item>one</item>\n      <item modifier=\"hello\">two</item>\n      <item>three</item>\n    </list>"
+    seq.makeString shouldBe "<list>\n      <item>one</item>\n      <item modifier=\"hello\">two</item>\n      <item>three</item>\n    </list>"
     (seq \\ "@modifier").text shouldBe "hello"
 
     (doc \ "list" \\ "@modifier").exists(n => n.exists(_.text == "hello")) shouldBe true
@@ -212,7 +212,7 @@ class VtdNodeSeqTest extends FunSpec {
         <b>3</b>
     </a>)
 
-    val bs = (elem \\ "b").map(x => x.mkString)
+    val bs = (elem \\ "b").map(x => x.makeString)
 
     bs.length shouldBe 3
     bs.filterNot(_ == "").length shouldBe 3
@@ -228,7 +228,7 @@ class VtdNodeSeqTest extends FunSpec {
         |</a>
       """.stripMargin)
 
-    val bs = (elem \\ "b").map(x => x.mkString)
+    val bs = (elem \\ "b").map(x => x.makeString)
 
     bs.length shouldBe 3
   }
@@ -263,7 +263,7 @@ class VtdNodeSeqTest extends FunSpec {
     seq.head.text shouldBe "hello bold curious silly sam"
 
     seq.map(_.text).mkString shouldBe "hello bold curious silly sam"
-    seq.mkString shouldBe "<title2 modifier=\"very\">hello <b><c>bold</c></b> curious <b>silly</b> sam</title2>"
+    seq.makeString shouldBe "<title2 modifier=\"very\">hello <b><c>bold</c></b> curious <b>silly</b> sam</title2>"
   }
 
 
