@@ -261,7 +261,7 @@ object VtdXml {
       }
     }
 
-    override def mkString = new String(payload)
+    def makeString = new String(payload)
 
     override def toString(): String = text
 
