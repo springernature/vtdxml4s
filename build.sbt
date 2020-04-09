@@ -2,16 +2,16 @@ name := "vtdxml4s"
 
 organization := "com.github.springernature"
 
-crossScalaVersions := Seq("2.12.3", "2.11.7")
+crossScalaVersions := Seq("2.12.3", "2.11.7", "2.13.1")
 
 scalaVersion := crossScalaVersions.value.head
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings")
 
 libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-xml" % "1.0.5",
+    "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
     "com.ximpleware" % "vtd-xml" % "2.13.4",
-    "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+    "org.scalatest" %% "scalatest" % "3.1.0" % "test"
   )
 
 publishTo := {
