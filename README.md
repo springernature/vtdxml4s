@@ -4,11 +4,12 @@ VTD-XML [![Build Status](https://travis-ci.org/springernature/vtdxml4s.svg?branc
 A drop in replacement for scala-xml with improved performance. It uses [VtdXml](http://vtd-xml.sourceforge.net "Vtd Xml Homepage") to parse and query XML 
 
 ## Supported platforms
-- Scala 2.11 and 2.12
+- Scala 2.11, 2.12 and 2.13
 - Vtd-xml 2.13
 
-## How to install
-- sbt: 
+## How to install using sbt
+
+## Version < 1.0.7
 ```
 resolvers += "jitpack" at "https://jitpack.io",
 libraryDependencies += "com.github.springernature" %% "vtdxml4s" % "v1.0"	
