@@ -9,6 +9,13 @@ A drop in replacement for scala-xml with improved performance. It uses [VtdXml](
 
 ## How to install using sbt
 
+## From version 1.0.7
+
+```
+resolvers += "Bintray JCenter" at "https://dl.bintray.com/springernature/vtdxml4s"
+libraryDependencies += "com.springernature" %% "vtdxml4s" % "1.0.7"	
+```
+
 ## Version < 1.0.7
 ```
 resolvers += "jitpack" at "https://jitpack.io",
