@@ -1,8 +1,10 @@
 name := "vtdxml4s"
 
-organization := "com.github.springernature"
+organization := "com.springernature"
 
 crossScalaVersions := Seq("2.12.3", "2.11.7", "2.13.1")
+
+version:= "1.0.7"
 
 scalaVersion := crossScalaVersions.value.head
 
@@ -14,6 +16,7 @@ libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "3.1.0" % "test"
   )
 
-publishTo := {
-  Some(Resolver.file("Local Maven Repository", new File(Path.userHome.absolutePath + "/.m2/repository")))
-}
+licenses ++= Seq(("GPL-2.0", url("http://opensource.org/licenses/GPL-2.0")))
+bintrayOrganization := Some("springernature")
+bintrayRepository := "vtdxml4s"
+bintrayReleaseOnPublish in ThisBuild := false
